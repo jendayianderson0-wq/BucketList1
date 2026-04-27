@@ -222,6 +222,7 @@ struct HomeroomView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 

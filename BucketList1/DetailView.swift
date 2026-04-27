@@ -149,6 +149,7 @@ struct DetailView: View {
                 }
             }
         }
+        //add a part for if the photo is not available for the user. 
         .overlay {
             if showCelebration {
                 ZStack {
