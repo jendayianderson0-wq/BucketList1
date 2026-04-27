@@ -1,8 +1,8 @@
 //
-//  InterestPageView.swift
+//  ContentView.swift
 //  BucketList1
 //
-//  Created by Jendayi Anderson on 4/20/26.
+//  Created by Jendayi Anderson on 4/9/26.
 //
 
 import SwiftUI
@@ -127,7 +127,7 @@ struct InterestPageView: View {
                     Text("\(selectedItems.count)/10")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(Color.gray)
-                        .padding(.bottom,40)
+                        .padding(.bottom,20)
                         .padding()
                 }
                 .padding(.top, 60)

@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
-@main
+
+//@main
 struct BucketList1App: App {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some Scene {
         WindowGroup {
-            InterestPageView()
-        }
-    }
-}
+            if hasCompletedOnboarding {
+                            HomeroomView()
+                        } else {
+                            InterestPageView(onComplete: {
+                                hasCompletedOnboarding = true
+                            })
+                        }
+                    }
+               //     .modelContainer(for: BucketItem.self)
+                }
+            }
