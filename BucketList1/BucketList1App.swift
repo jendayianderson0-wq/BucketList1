@@ -9,14 +9,14 @@ import SwiftUI
 import SwiftData
 
 
-//@main
+@main
 struct BucketList1App: App {
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
 
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                            HomeroomView()
+                NotebookView()
                         } else {
                             InterestPageView(onComplete: {
                                 hasCompletedOnboarding = true

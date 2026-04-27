@@ -163,7 +163,7 @@ struct InterestPageView: View {
                 .disabled(selectedItems.count < requiredCount)
             }
         }
-        
+        .navigationBarBackButtonHidden(true)
     }
 }
 
