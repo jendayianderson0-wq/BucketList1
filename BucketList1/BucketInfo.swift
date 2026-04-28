@@ -15,6 +15,7 @@ struct BucketItem: Identifiable {
     let description: String
     let linkedInterest: String
     var isCompleted: Bool = false
+    // 1. Add a property called image 
 }
  
  

@@ -59,6 +59,11 @@ struct YearbookView: View {
     @State private var showingCamera = false
     @State private var isEditing = false
     @State private var tappedImage: IdentifiableImage? = nil
+    // 4. This step comes after swift Data
+        // 4.1 Save an array of tasks that have an image
+        // 4.2 Reference that array in this view
+        // 4.3 Pass that array through a grid
+        // 4.4 iterate through that array using a ForEach Loop
     
     let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
     

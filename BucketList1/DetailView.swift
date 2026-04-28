@@ -109,6 +109,9 @@ struct DetailView: View {
  
                     //only is completed when a photo is added
                     Button {
+                        // 2. unwrap photoItem
+                            // 2.5 set item.image == unwrappedPhotoItem
+                        // 3. Handle the nil value (if a photoItem isn't selected
                         item.isCompleted = true
                         showCelebration = true
                     } label: {
