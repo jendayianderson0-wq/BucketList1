@@ -27,11 +27,11 @@ struct InterestBubble: View {
     let title: String
     let color: Color
     @Binding var selectedItems: Set<String>
-
+    
     var isSelected: Bool {
         selectedItems.contains(title)
     }
-
+    
     var body: some View {
         Text(title)
             .font(.system(size: 14))
@@ -48,26 +48,28 @@ struct InterestBubble: View {
             .foregroundStyle(Color.primary)
             .onTapGesture {
                 if isSelected {
-                                   selectedItems.remove(title)
-                               } else {
-                                   selectedItems.insert(title)
-                               }
-                           }
-                   }
-               }
+                    selectedItems.remove(title)
+                } else {
+                    // Use Swift Data to save selectedItems
+                        // that saved selectedItems will be called later in our ListPage
+                    selectedItems.insert(title)
+                }
+            }
+    }
+}
 
 struct ChipRow: View {
     let items: [String]
     let color: Color
     @Binding var selectedItems: Set<String>
-
+    
     // Split items into chunks of 5
     var rows: [[String]] {
         stride(from: 0, to: items.count, by: 5).map {
             Array(items[$0..<min($0 + 5, items.count)])
         }
     }
-
+    
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 5) {
@@ -84,27 +86,28 @@ struct ChipRow: View {
     }
 }
 
-            struct CategorySection: View {
-                let category: InterestCategory
-                @Binding var selectedItems: Set<String>
-
-                var body: some View {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(spacing: 6) {
-                            Text(category.emoji)
-                                .font(.system(size: 18))
-                            Text(category.name)
-                                .font(.system(size: 16, weight: .bold))
-                        }
-
-                        ChipRow(items: category.items, color: category.color, selectedItems: $selectedItems)
-                    }
-                }
+struct CategorySection: View {
+    let category: InterestCategory
+    @Binding var selectedItems: Set<String>
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                Text(category.emoji)
+                    .font(.system(size: 18))
+                Text(category.name)
+                    .font(.system(size: 16, weight: .bold))
             }
+            
+            ChipRow(items: category.items, color: category.color, selectedItems: $selectedItems)
+        }
+    }
+}
 
 
 struct InterestPageView: View {
     var onComplete: (() -> Void)? = nil
+    // This needs Set needs to be saved when Continue is selected
     @State private var selectedItems: Set<String> = []
     let requiredCount = 10
     var body: some View {
@@ -120,7 +123,7 @@ struct InterestPageView: View {
                         .foregroundStyle(Color.gray)
                         .bold()
                     
-                   // Spacer()
+                    // Spacer()
                     
                     
                     // selected items amount
@@ -142,7 +145,9 @@ struct InterestPageView: View {
                 .padding(.bottom)
                 
                 NavigationLink {
-                    ListPage(selectedItems: selectedItems)
+                   HomeroomView()
+                    // We need to saved our selectedItems
+                    // Navigate to our HomeRoom
                 } label: {
                     Text("Continue")
                         .padding()
@@ -158,7 +163,7 @@ struct InterestPageView: View {
                 .disabled(selectedItems.count < requiredCount)
             }
         }
-        
+        .navigationBarBackButtonHidden(true)
     }
 }
 

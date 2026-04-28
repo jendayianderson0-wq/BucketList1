@@ -6,17 +6,20 @@
 //
 
 import SwiftUI
-import SwiftData
+import TipKit
 
-
-//@main
+@main
 struct BucketList1App: App {
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    init() {
+        
+        try? Tips.configure()
+    }
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
 
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                            HomeroomView()
+                NotebookView()
                         } else {
                             InterestPageView(onComplete: {
                                 hasCompletedOnboarding = true
