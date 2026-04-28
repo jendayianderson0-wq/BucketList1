@@ -53,10 +53,8 @@ struct HomeroomView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                //                Image("Homeroom")
-                //                    .resizable()
-                //                    .ignoresSafeArea()
-                
+                Color(.systemGray6)
+                    .ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 20) {
                         
@@ -82,13 +80,14 @@ struct HomeroomView: View {
                                     .foregroundStyle(.blue)
                                     .rotationEffect(.degrees(90))
                             }
+                            
                         }
                     
                         .frame(maxWidth: .infinity, alignment: .trailing)
                         
                         // ── Title ──
                         Text("Homeroom")
-                            .foregroundColor(.red)
+                            .foregroundColor(.redd)
                             .font(.custom("Soopafresh", size: 50))
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -110,6 +109,7 @@ struct HomeroomView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .padding(.horizontal)
                             
   ScrollView(.horizontal, showsIndicators: false) {
      HStack(spacing: 14) {
@@ -123,7 +123,7 @@ struct HomeroomView: View {
                   .multilineTextAlignment(.center)
                   .foregroundStyle(.white)
                 .frame(width: 150, height: 150)
-             .padding(12)
+                //.padding(12)
                  .background(
                  RoundedRectangle(cornerRadius: 20)
                            .fill(colors[index % colors.count])
@@ -133,8 +133,11 @@ struct HomeroomView: View {
                                         }
                                     }
                                 }
-                                .padding(.horizontal, 8)
+                               //.padding(.horizontal, 16)
+                             //  .padding(.vertical, 4)
                             }
+                            
+                    .padding(.horizontal, 8)
                         }
                         
                         // ── Daily Affirmation ──
@@ -146,8 +149,6 @@ struct HomeroomView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             VStack(spacing: 8) {
-                                //                                Text("✨")
-                                //                                    .font(.system(size: 28))
                                 Text(todaysAffirmation)
                                     .font(.system(size: 16, weight: .medium))
                                     .multilineTextAlignment(.center)
@@ -155,15 +156,15 @@ struct HomeroomView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 50)
-                           //.padding(.horizontal, 80)
-                            .background(
+                            .padding(.vertical, 50)                            .background(
                                 RoundedRectangle(cornerRadius: 20)
                                     .fill(Color(.systemYellow).opacity(0.85))
-                                    .padding(.horizontal, 8)
+                                   // .padding(.horizontal, 8)
                             )
                             .shadow(color: Color.yellow.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
+                        
+                        .padding(.horizontal,10)
                         
                         // ── Yearbook Catalog ──
                         VStack(spacing: 12) {
@@ -182,6 +183,9 @@ struct HomeroomView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            
+                            .padding(.vertical,10)
+                            .padding(.horizontal,10)
                             
                           //  .padding()
             ScrollView(.horizontal, showsIndicators: false) {
@@ -218,6 +222,9 @@ struct HomeroomView: View {
                                 }
                             }
                         }
+                        
+                        .padding(.horizontal,5)
+                        .padding(.vertical,5)
                     }
                 }
             }

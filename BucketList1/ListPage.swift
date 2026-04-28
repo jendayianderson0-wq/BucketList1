@@ -74,16 +74,16 @@ Image(systemName: "star.fill")
                                 }
                                 .buttonStyle(.plain)
                                 .swipeActions(edge: .trailing) {
-                                    if selectedTab == 1 {
-                                        Button {
-                                            tasks[taskIndex].isCompleted = false
-                                        } label: {
-                                            Label("Move Back", systemImage: "arrow.uturn.left")
-                                        }
-                                        .tint(.orange)
+          if selectedTab == 1 {
+           Button {
+                 tasks[taskIndex].isCompleted = false
+                   } label: {
+                  Label("Move Back", systemImage: "arrow.uturn.left")
+                            }
+                           .tint(.orange)
                                     }
                                 }
-                                Divider().padding(.leading, 56)
+                     Divider().padding(.leading, 56)
                             }
                         }
                     }
@@ -105,19 +105,19 @@ Image(systemName: "star.fill")
                 .padding(.bottom, 32)
             }
 
-            // Toast
+            // Toast : used for quick alerts like messages.
             if showToast {
                 VStack {
                     Spacer()
                     Text("\"\(addedTaskName)\" added!")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 12)
-                        .background(Color.black.opacity(0.8))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color(.label).opacity(0.85))
                         .clipShape(Capsule())
                         .padding(.bottom, 110)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+
                 }
             }
 

@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
-import SwiftData
-
+import TipKit
 
 @main
 struct BucketList1App: App {
+    init() {
+        
+        try? Tips.configure()
+    }
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
 
     var body: some Scene {
