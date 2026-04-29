@@ -9,11 +9,14 @@ import SwiftUI
 import PhotosUI
 
 struct ConfettiPiece: View {
+    
     let index: Int
     @State private var animate = false
-
+    
+    
+    
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
-
+    
     var body: some View {
         Circle()
             .fill(colors[index % colors.count])
@@ -38,24 +41,26 @@ struct DetailView: View {
     @Binding var item: BucketItem
     @State private var uploadedImage: Image? = nil
     @State private var photoItem: PhotosPickerItem? = nil
+    @State private var selectedItem: [PhotosPickerItem] = []
+    @State private var  image: Image?  = nil
     @State private var showCelebration = false
- 
+    
     // "Complete task" is only active once a photo is uploaded
     var canComplete: Bool { uploadedImage != nil }
- 
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
- 
+                
                 ZStack(){
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color(.systemBackground))
                         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
                         .overlay (
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black.opacity(0.30), lineWidth: 1)
-                )
- 
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black.opacity(0.30), lineWidth: 1)
+                        )
+                    
                     VStack {
                         Text(item.task)
                             .font(.system(size: 22, weight: .bold))
@@ -67,7 +72,7 @@ struct DetailView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
- 
+                
                 // Description
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Description")
@@ -81,11 +86,11 @@ struct DetailView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray6))
-                    )
+                )
                 
                 .shadow(color: .black.opacity(0.30), radius: 6, x: 0, y: 3)
                 .padding(.horizontal,20)
- 
+                
                 // Uploaded photo preview (appears after picking)
                 if let uploadedImage {
                     uploadedImage
@@ -94,7 +99,7 @@ struct DetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal, 20)
                 }
- 
+                
                 HStack(spacing: 12) {
                     // Add to Yearbook 
                     PhotosPicker(selection: $photoItem, matching: .images) {
@@ -106,12 +111,14 @@ struct DetailView: View {
                             .background(Color.redd)
                             .clipShape(RoundedRectangle(cornerRadius: 30))
                     }
- 
+                    
                     //only is completed when a photo is added
                     Button {
+                        
                         // 2. unwrap photoItem
-                            // 2.5 set item.image == unwrappedPhotoItem
+                        // 2.5 set item.image == unwrappedPhotoItem
                         // 3. Handle the nil value (if a photoItem isn't selected
+                        
                         item.isCompleted = true
                         showCelebration = true
                     } label: {
@@ -130,16 +137,35 @@ struct DetailView: View {
             }
         }
         .background(
-        Image("crumple")
-            .resizable()
-            .scaledToFill()
-            .ignoresSafeArea()
-             )
+            Image("crumple")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        )
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Details")
                     .font(.custom("soopafresh", size: 40))
                     .foregroundStyle(Color.redd)
+            }
+        }
+        .task(id: photoItem) {
+            
+            guard let photoItem else {          // 1. unwrap — exits if nil
+                
+                item.image = nil                 // 3. nil: nothing selected
+                
+                return
+                
+            }
+            if let data = try? await photoItem
+                .loadTransferable(type: Data.self),
+               let uiImage = UIImage(data: data) {
+                item.image = Image(uiImage: uiImage) // 2. set item.image
+                
+            } else {
+                item.image = nil                 // 3. nil: load failed
+                
             }
         }
         
@@ -159,15 +185,15 @@ struct DetailView: View {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .onTapGesture { showCelebration = false }
-
+                    
                     VStack(spacing: 16) {
                         Text("🎉")
                             .font(.system(size: 60))
-
+                        
                         Text("Good Job!")
                             .font(.custom("soopafresh", size: 36))
                             .foregroundStyle(Color.redd)
-
+                        
                         Text("You completed this task!")
                             .font(.system(size: 16))
                             .foregroundStyle(Color.gray)
@@ -177,7 +203,7 @@ struct DetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .shadow(radius: 20)
                     .padding(.horizontal, 40)
-
+                    
                     // Confetti pieces
                     ForEach(0..<20, id: \.self) { i in
                         ConfettiPiece(index: i)
@@ -197,7 +223,7 @@ struct DetailView: View {
         linkedInterest: "",
         isCompleted: false
     )
-
+    
     return NavigationView {
         DetailView(item: $previewItem)
     }

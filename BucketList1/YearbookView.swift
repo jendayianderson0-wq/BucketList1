@@ -56,14 +56,15 @@ struct YearbookView: View {
     
     @State private var selectedItem: [PhotosPickerItem] = []
     @State private var selectedImages: [UIImage] = []
-    @State private var showingCamera = false
+   // @State private var showingCamera = false
     @State private var isEditing = false
     @State private var tappedImage: IdentifiableImage? = nil
+    
     // 4. This step comes after swift Data
-        // 4.1 Save an array of tasks that have an image
-        // 4.2 Reference that array in this view
-        // 4.3 Pass that array through a grid
-        // 4.4 iterate through that array using a ForEach Loop
+    // 4.1 Save an array of tasks that have an image
+    // 4.2 Reference that array in this view
+    // 4.3 Pass that array through a grid
+    // 4.4 iterate through that array using a ForEach Loop
     
     let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
     
@@ -166,39 +167,39 @@ struct YearbookView: View {
                 }
             }
             
-            VStack {
-                PhotosPicker(selection: $selectedItem,
-                             maxSelectionCount: 10,
-                             matching: .images) {
-                    Image(systemName: "photo.on.rectangle")
-                        .foregroundColor(.red)
-                        .font(.system(size: 25))
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding()
-            }
-        }
-        .sheet(item: $tappedImage) { identifiable in
-            FullScreenImageView(image: identifiable.image)
-        }
-        .onAppear {
-            loadAllImages()
-        }
-        .onChange(of: selectedItem) { _ in
-            Task {
-                var newPaths = savedPaths
-                for item in selectedItem {
-                    if let data = try? await item.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: data) {
-                        selectedImages.append(uiImage)
-                        let name = "yearbook_\(UUID().uuidString).jpg"
-                        if let path = saveImage(uiImage, name: name) {
-                            newPaths.append(path)
-                        }
-                    }
-                }
-                savePaths(newPaths)
-            }
+            //            VStack {
+            //                PhotosPicker(selection: $selectedItem,
+            //                             maxSelectionCount: 10,
+            //                             matching: .images) {
+            //                    Image(systemName: "photo.on.rectangle")
+            //                        .foregroundColor(.red)
+            //                        .font(.system(size: 25))
+            //                }
+            //                .frame(maxWidth: .infinity, alignment: .trailing)
+            //                .padding()
+            //            }
+            //        }
+            //        .sheet(item: $tappedImage) { identifiable in
+            //            FullScreenImageView(image: identifiable.image)
+            //        }
+            //        .onAppear {
+            //            loadAllImages()
+            //        }
+            //        .onChange(of: selectedItem) { _ in
+            //            Task {
+            //                var newPaths = savedPaths
+            //                for item in selectedItem {
+            //                    if let data = try? await item.loadTransferable(type: Data.self),
+            //                       let uiImage = UIImage(data: data) {
+            //                        selectedImages.append(uiImage)
+            //                        let name = "yearbook_\(UUID().uuidString).jpg"
+            //                        if let path = saveImage(uiImage, name: name) {
+            //                            newPaths.append(path)
+            //                        }
+            //                    }
+            //                }
+            //                savePaths(newPaths)
+            //            }
         }
     }
 }
