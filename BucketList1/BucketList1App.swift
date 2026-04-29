@@ -10,9 +10,14 @@ import TipKit
 
 @main
 struct BucketList1App: App {
+    //storage for tip kit
     init() {
-        
-        try? Tips.configure()
+        //try? stops the crashing "attmept this but if it fails kist ignore the error 
+        try? Tips.resetDatastore()
+        try? Tips.configure([
+            .displayFrequency(.immediate),
+            .datastoreLocation(.applicationDefault)
+        ])
     }
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
 

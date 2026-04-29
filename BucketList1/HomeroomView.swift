@@ -60,15 +60,15 @@ struct HomeroomView: View {
                         
                         // ── Trophy / Stars header ──
                         VStack {
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.pink)
-                                .rotationEffect(.degrees(90))
-                            HStack {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 34))
-                                    .foregroundStyle(.yellow)
-                                    .rotationEffect(.degrees(90))
+                 Image(systemName: "star.fill")
+                 .font(.system(size: 28))
+                    .foregroundStyle(.pink)
+                   .rotationEffect(.degrees(90))
+                    HStack {
+                        Image(systemName: "star.fill")
+                           .font(.system(size: 34))
+                      .foregroundStyle(.yellow)
+                       .rotationEffect(.degrees(90))
                                 NavigationLink {
                                     AchievementsView()
                                 } label: {
