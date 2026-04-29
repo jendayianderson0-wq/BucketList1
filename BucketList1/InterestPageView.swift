@@ -159,11 +159,17 @@ struct InterestPageView: View {
                         )
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 30))
+                   
                 }
                 .disabled(selectedItems.count < requiredCount)
+                
+               
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            TrophyTip.hasCompletedOnboarding = true
+        }
     }
 }
 
