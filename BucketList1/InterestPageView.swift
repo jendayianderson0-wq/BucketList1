@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+//import TipKit
 
 
 struct InterestCategory: Identifiable {
@@ -145,7 +145,7 @@ struct InterestPageView: View {
                 .padding(.bottom)
                 
                 NavigationLink {
-                   HomeroomView()
+                    HomeroomView()
                     // We need to saved our selectedItems
                     // Navigate to our HomeRoom
                 } label: {
@@ -159,19 +159,24 @@ struct InterestPageView: View {
                         )
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 30))
-                   
-                }
-                .disabled(selectedItems.count < requiredCount)
+                    
+                    }
                 
-               
+                .simultaneousGesture(TapGesture().onEnded {
+                    TrophyTip.hasCompletedOnboarding = true
+                    
+                })
+                    
+                        .disabled(selectedItems.count < requiredCount)
+                    
+                    
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+            .onAppear {
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .onAppear {
-            TrophyTip.hasCompletedOnboarding = true
-        }
     }
-}
 
 
 
