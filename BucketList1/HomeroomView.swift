@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 
 // ── Daily Affirmations
 let dailyAffirmations: [String] = [
@@ -26,18 +27,21 @@ let dailyAffirmations: [String] = [
 struct HomeroomView: View {
     @AppStorage("weeklyTaskIDs") private var weeklyTaskIDsRaw: String = ""
     @AppStorage("weeklyTaskDate") private var weeklyTaskDateRaw: Double = 0
-    
+    private let trophyTip = TrophyTip()
+
     // Picks a different affirmation each day based on the day of the year
     private var todaysAffirmation: String {
         let day = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
         return dailyAffirmations[day % dailyAffirmations.count]
     }
     
+    //refreshes the tasks every week
     private var weeklyTasks: [BucketItem] {
         let saved = Date(timeIntervalSince1970: weeklyTaskDateRaw)
         let oneWeek: TimeInterval = 7 * 24 * 60 * 60
         let needsRefresh = weeklyTaskIDsRaw.isEmpty || Date().timeIntervalSince(saved) > oneWeek
         
+        //filters out the already completed tasks and then shuffles the tasks to display
         if needsRefresh {
             let uncompleted = defaultTasks.filter { !$0.isCompleted }
             let picked = Array(uncompleted.shuffled().prefix(3))
@@ -60,21 +64,23 @@ struct HomeroomView: View {
                         
                         // ── Trophy / Stars header ──
                         VStack {
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.pink)
-                                .rotationEffect(.degrees(90))
-                            HStack {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 34))
-                                    .foregroundStyle(.yellow)
-                                    .rotationEffect(.degrees(90))
+                 Image(systemName: "star.fill")
+                 .font(.system(size: 28))
+                    .foregroundStyle(.pink)
+                   .rotationEffect(.degrees(90))
+                    HStack {
+                        Image(systemName: "star.fill")
+                           .font(.system(size: 34))
+                      .foregroundStyle(.yellow)
+                       .rotationEffect(.degrees(90))
                                 NavigationLink {
                                     AchievementsView()
                                 } label: {
+                                    
                                     Text("🏆")
                                         .font(.system(size: 55))
                                 }
+                                .popoverTip(trophyTip)  // ← this must be here
                                 Image(systemName: "star.fill")
                                     .font(.system(size: 40))
                                     .foregroundStyle(.blue)
@@ -236,3 +242,4 @@ struct HomeroomView: View {
 #Preview {
     HomeroomView()
 }
+
