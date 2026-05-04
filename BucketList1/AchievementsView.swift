@@ -68,8 +68,8 @@ struct AchievementsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(achievements) { achievement in
-                        ZStack(alignment: .topTrailing) {
+            ForEach(achievements) { achievement in
+             ZStack(alignment: .topTrailing) {
                             Image(achievement.imageName)
                                 .resizable()
                                 .scaledToFit()
