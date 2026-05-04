@@ -16,6 +16,7 @@ import SwiftData
 struct IdentifiableImage: Identifiable {
     let id = UUID()
     let image: UIImage
+    
 }
 
 // MARK: - Full Screen Image Viewer
