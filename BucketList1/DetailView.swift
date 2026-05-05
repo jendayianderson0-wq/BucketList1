@@ -44,14 +44,21 @@ struct DetailView: View {
     var canComplete: Bool { uploadedImage != nil }
     
     
+    @AppStorage("savedImagePaths") var savedPathsData: Data = Data()
+
     func saveImageToDisk(_ image: UIImage) {
-            guard let data = image.jpegData(compressionQuality: 0.8) else { return }
-            let filename = "detail_\(item.id.uuidString).jpg"
-            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent(filename)
-            try? data.write(to: url)
-            item.imagePath = url.path   // save path into BucketItem
-        }
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return }
+        let filename = "yearbook_\(UUID().uuidString).jpg"  // ← match yearbook prefix
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(filename)
+        try? data.write(to: url)
+        item.imagePath = url.path
+
+        // ← Also register in YearbookView's shared AppStorage
+        var paths = (try? JSONDecoder().decode([String].self, from: savedPathsData)) ?? []
+        paths.append(url.path)
+        savedPathsData = (try? JSONEncoder().encode(paths)) ?? Data()
+    }
 
         // MARK: - Load saved image from disk on appear
         func loadSavedImage() {

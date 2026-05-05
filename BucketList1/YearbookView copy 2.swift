@@ -9,20 +9,23 @@ import SwiftUI
 import PhotosUI
 
 struct YearbookView: View {
+    struct YearbookEntry: Codable {
+        var path: String
+        var caption: String?
+    }
 
-    // MARK: - State
-    @AppStorage("savedImagePaths") var savedPathsData: Data = Data()
+    @AppStorage("savedYearbookEntries") var savedEntriesData: Data = Data()
     @State private var images: [UIImage] = []
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var isEditing = false
     @State private var fullscreenImage: UIImage? = nil
 
     // MARK: - Saved Paths Helpers
-    var savedPaths: [String] {
-        (try? JSONDecoder().decode([String].self, from: savedPathsData)) ?? []
+    var savedEntries: [YearbookEntry] {
+        (try? JSONDecoder().decode([YearbookEntry].self, from: savedEntriesData)) ?? []
     }
-    func updatePaths(_ paths: [String]) {
-        savedPathsData = (try? JSONEncoder().encode(paths)) ?? Data()
+    func updateEntries(_ entries: [YearbookEntry]) {
+        savedEntriesData = (try? JSONEncoder().encode(entries)) ?? Data()
     }
 
     // MARK: - Image Helpers
@@ -35,20 +38,22 @@ struct YearbookView: View {
     }
 
     func loadImages() {
-        images = savedPaths.compactMap { path in
-            guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return nil }
+        images = savedEntries.compactMap { entry in
+            guard let data = try? Data(contentsOf: URL(fileURLWithPath: entry.path)) else { return nil }
             return UIImage(data: data)
         }
     }
 
     func deleteImage(at index: Int) {
-        var paths = savedPaths
-        guard index < paths.count else { return }
-        try? FileManager.default.removeItem(atPath: paths[index])
+        var entries = savedEntries
+        guard index < entries.count else { return }
+        try? FileManager.default.removeItem(atPath: entries[index].path)
         images.remove(at: index)
-        paths.remove(at: index)
-        updatePaths(paths)
+        entries.remove(at: index)
+        updateEntries(entries)
     }
+
+   
 
     // MARK: - Body
     var body: some View {
@@ -113,16 +118,16 @@ struct YearbookView: View {
         .onAppear { loadImages() }
         .onChange(of: pickerItems) { _ in
             Task {
-                var paths = savedPaths
+                var entries = savedEntries
                 for item in pickerItems {
                     if let data = try? await item.loadTransferable(type: Data.self),
                        let img = UIImage(data: data),
                        let path = saveImage(img) {
                         images.append(img)
-                        paths.append(path)
+                        entries.append(YearbookEntry(path: path, caption: nil))
                     }
                 }
-                updatePaths(paths)
+                updateEntries(entries)
                 pickerItems = []
             }
         }
