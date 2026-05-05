@@ -9,6 +9,11 @@ import SwiftUI
 import PhotosUI
 import SwiftData
 
+struct YearbookEntry: Codable, Equatable {
+    var path: String
+    var caption: String?
+}
+
 struct ConfettiPiece: View {
     let index: Int
     @State private var animate = false
@@ -41,11 +46,13 @@ struct DetailView: View {
     @State private var photoItem: PhotosPickerItem? = nil
     @State private var showCelebration = false
     @State private var caption: String = ""
-    var canComplete: Bool { uploadedImage != nil }
+    
     
     
     @AppStorage("savedImagePaths") var savedPathsData: Data = Data()
-
+    
+    var canComplete: Bool { uploadedImage != nil }
+    
     func saveImageToDisk(_ image: UIImage) {
         guard let data = image.jpegData(compressionQuality: 0.8) else { return }
         let filename = "yearbook_\(UUID().uuidString).jpg"  // ← match yearbook prefix
@@ -53,23 +60,34 @@ struct DetailView: View {
             .appendingPathComponent(filename)
         try? data.write(to: url)
         item.imagePath = url.path
-
-        // ← Also register in YearbookView's shared AppStorage
-        var paths = (try? JSONDecoder().decode([String].self, from: savedPathsData)) ?? []
-        paths.append(url.path)
-        savedPathsData = (try? JSONEncoder().encode(paths)) ?? Data()
+        
+        // Register in YearbookView's shared AppStorage as [YearbookEntry]
+        var entries = (try? JSONDecoder().decode([YearbookEntry].self, from: savedPathsData)) ?? []
+        let newEntry = YearbookEntry(path: url.path, caption: nil)
+        entries.append(newEntry)
+        savedPathsData = (try? JSONEncoder().encode(entries)) ?? Data()
     }
-
-        // MARK: - Load saved image from disk on appear
-        func loadSavedImage() {
-            guard let path = item.imagePath else { return }
-            if let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
-                if let image = UIImage(data: data) {
-                    uploadedImage = Image(uiImage: image)
-                }
-            }
-            caption = item.caption ?? ""
+    
+    // MARK: - Load saved image from disk on appear
+    
+    func updateCaptionInYearbook() {
+        guard let path = item.imagePath else { return }
+        var entries = (try? JSONDecoder().decode([YearbookEntry].self, from: savedPathsData)) ?? []
+        if let idx = entries.firstIndex(where: { $0.path == path }) {
+            entries[idx].caption = caption.isEmpty ? nil : caption
+            savedPathsData = (try? JSONEncoder().encode(entries)) ?? Data()
         }
+    }
+    
+    func loadSavedImage() {
+        guard let path = item.imagePath else { return }
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+            if let image = UIImage(data: data) {
+                uploadedImage = Image(uiImage: image)
+            }
+        }
+        caption = item.caption ?? ""
+    }
 
     
     var body: some View {
@@ -139,6 +157,7 @@ struct DetailView: View {
                                 }
                      
                      item.caption = caption
+                     updateCaptionInYearbook()
                             }
                         
                         Text("\(caption.split(separator: " ").count)/60 words")
@@ -166,6 +185,7 @@ struct DetailView: View {
                 Button {
                     item.isCompleted = true
                     item.caption = caption
+                    updateCaptionInYearbook()
                     showCelebration = true
                 } label: {
                     Label("Completed task", systemImage: "checkmark.circle.fill")

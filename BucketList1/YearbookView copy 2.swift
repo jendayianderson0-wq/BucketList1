@@ -18,7 +18,7 @@ struct YearbookView: View {
     @State private var images: [UIImage] = []
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var isEditing = false
-    @State private var fullscreenImage: UIImage? = nil
+    @State private var fullscreenPhoto: FullscreenPhoto? = nil
 
     // MARK: - Saved Paths Helpers
     var savedEntries: [YearbookEntry] {
@@ -100,7 +100,10 @@ struct YearbookView: View {
                         images: images,
                         isEditing: isEditing,
                         onDelete: deleteImage,
-                        onTap: { img in fullscreenImage = img }
+                        onTap: { img, idx in
+                            let caption = (idx < savedEntries.count) ? savedEntries[idx].caption : nil
+                            fullscreenPhoto = FullscreenPhoto(image: img, caption: caption)
+                        }
                     )
                     .padding(.horizontal, 12)
                     .padding(.bottom, 80) // space so last photo isn't behind picker button
@@ -108,7 +111,7 @@ struct YearbookView: View {
             }
 
             // ── Photo Picker Button (bottom right) ──
-            PhotosPicker(selection: $pickerItems, maxSelectionCount: 10, matching: .images) {
+            PhotosPicker(selection: $pickerItems, maxSelectionCount: 3, matching: .images) {
                 Image(systemName: "photo.on.rectangle")
                     .foregroundColor(.red)
                     .font(.system(size: 25))
@@ -116,6 +119,9 @@ struct YearbookView: View {
             }
         }
         .onAppear { loadImages() }
+        .onChange(of:savedEntriesData) { _ in
+            loadImages()
+        }
         .onChange(of: pickerItems) { _ in
             Task {
                 var entries = savedEntries
@@ -131,10 +137,7 @@ struct YearbookView: View {
                 pickerItems = []
             }
         }
-        .fullScreenCover(item: Binding(
-            get: { fullscreenImage.map { FullscreenPhoto(image: $0, caption: nil) } },
-            set: { fullscreenImage = $0?.image }
-        )) { photo in
+        .fullScreenCover(item: $fullscreenPhoto) { photo in
             FullscreenView(image: photo.image, caption: photo.caption)
         }
     }
@@ -145,7 +148,7 @@ struct PinterestGrid: View {
     let images: [UIImage]
     let isEditing: Bool
     let onDelete: (Int) -> Void
-    let onTap: (UIImage) -> Void
+    let onTap: (UIImage, Int) -> Void
 
     var body: some View {
         let leftImages  = images.enumerated().filter { $0.offset % 2 == 0 }
@@ -172,7 +175,7 @@ struct PhotoCard: View {
     let index: Int
     let isEditing: Bool
     let onDelete: (Int) -> Void
-    let onTap: (UIImage) -> Void
+    let onTap: (UIImage, Int) -> Void
 
     var cardHeight: CGFloat {
         let ratio = image.size.height / image.size.width
@@ -190,7 +193,7 @@ struct PhotoCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .contentShape(RoundedRectangle(cornerRadius: 16))
                 .onTapGesture {
-                    if !isEditing { onTap(image) }
+                    if !isEditing { onTap(image, index) }
                 }
 
             if isEditing {
