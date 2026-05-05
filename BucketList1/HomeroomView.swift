@@ -96,7 +96,7 @@ struct HomeroomView: View {
                             .foregroundColor(.redd)
                             .font(.custom("Soopafresh", size: 50))
                             .fontWeight(.bold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
                         
                         // ── Adventure List ──
                         VStack(spacing: 12) {

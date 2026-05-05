@@ -127,10 +127,10 @@ struct YearbookView: View {
             }
         }
         .fullScreenCover(item: Binding(
-            get: { fullscreenImage.map { FullscreenPhoto(image: $0) } },
+            get: { fullscreenImage.map { FullscreenPhoto(image: $0, caption: nil) } },
             set: { fullscreenImage = $0?.image }
         )) { photo in
-            FullscreenView(image: photo.image)
+            FullscreenView(image: photo.image, caption: photo.caption)
         }
     }
 }
@@ -204,10 +204,12 @@ struct PhotoCard: View {
 struct FullscreenPhoto: Identifiable {
     let id = UUID()
     let image: UIImage
+    let caption: String?
 }
 
 struct FullscreenView: View {
     let image: UIImage
+    let caption: String?
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -216,6 +218,15 @@ struct FullscreenView: View {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
+            
+            if let caption, !caption.isEmpty {
+                Text(caption)
+                    .font(.system(size: 15))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(16)
+            }
+            
             Button { dismiss() } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.white, .gray)
