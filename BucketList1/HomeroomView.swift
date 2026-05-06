@@ -7,6 +7,7 @@
 
 import SwiftUI
 import TipKit
+import SwiftData
 
 // ── Daily Affirmations
 let dailyAffirmations: [String] = [
@@ -28,7 +29,9 @@ struct HomeroomView: View {
     @AppStorage("weeklyTaskIDs") private var weeklyTaskIDsRaw: String = ""
     @AppStorage("weeklyTaskDate") private var weeklyTaskDateRaw: Double = 0
     private let trophyTip = TrophyTip()
-
+    
+    @Query(sort: \YearbookPhoto.dateAdded) private var yearbookPhotos: [YearbookPhoto]
+    
     // Picks a different affirmation each day based on the day of the year
     private var todaysAffirmation: String {
         let day = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
@@ -54,6 +57,8 @@ struct HomeroomView: View {
         return defaultTasks.filter { ids.contains($0.task) }
     }
     
+
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -64,15 +69,15 @@ struct HomeroomView: View {
                         
                         // ── Trophy / Stars header ──
                         VStack {
-                 Image(systemName: "star.fill")
-                 .font(.system(size: 28))
-                    .foregroundStyle(.pink)
-                   .rotationEffect(.degrees(90))
-                    HStack {
-                        Image(systemName: "star.fill")
-                           .font(.system(size: 34))
-                      .foregroundStyle(.yellow)
-                       .rotationEffect(.degrees(90))
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.pink)
+                                .rotationEffect(.degrees(90))
+                            HStack {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 34))
+                                    .foregroundStyle(.yellow)
+                                    .rotationEffect(.degrees(90))
                                 NavigationLink {
                                     AchievementsView()
                                 } label: {
@@ -88,7 +93,7 @@ struct HomeroomView: View {
                             }
                             
                         }
-                    
+                        
                         .frame(maxWidth: .infinity, alignment: .trailing)
                         
                         // ── Title ──
@@ -96,7 +101,7 @@ struct HomeroomView: View {
                             .foregroundColor(.redd)
                             .font(.custom("Soopafresh", size: 50))
                             .fontWeight(.bold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        //                            .frame(maxWidth: .infinity, alignment: .leading)
                         
                         // ── Adventure List ──
                         VStack(spacing: 12) {
@@ -117,33 +122,33 @@ struct HomeroomView: View {
                             }
                             .padding(.horizontal)
                             
-  ScrollView(.horizontal, showsIndicators: false) {
-     HStack(spacing: 14) {
-                let colors: [Color] = [.purple, .orange, .blue]
-       ForEach(Array(weeklyTasks.enumerated()), id: \.offset) { index, item in
-         NavigationLink {
-               ListPage()
-         } label: {
-                    Text(item.task)
-               .font(.system(size: 15, weight: .medium))
-                  .multilineTextAlignment(.center)
-                  .foregroundStyle(.white)
-                .frame(width: 150, height: 150)
-                //.padding(12)
-                 .background(
-                 RoundedRectangle(cornerRadius: 20)
-                           .fill(colors[index % colors.count])
-                      )
-                 .shadow(color: colors[index % colors.count].opacity(0.4),
-                             radius: 8, x: 0, y: 4)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 14) {
+                                    let colors: [Color] = [.purple, .orange, .blue]
+                                    ForEach(Array(weeklyTasks.enumerated()), id: \.offset) { index, item in
+                                        NavigationLink {
+                                            ListPage()
+                                        } label: {
+                                            Text(item.task)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .multilineTextAlignment(.center)
+                                                .foregroundStyle(.white)
+                                                .frame(width: 150, height: 150)
+                                            //.padding(12)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 20)
+                                                        .fill(colors[index % colors.count])
+                                                )
+                                                .shadow(color: colors[index % colors.count].opacity(0.4),
+                                                        radius: 8, x: 0, y: 4)
                                         }
                                     }
                                 }
-                               //.padding(.horizontal, 16)
-                             //  .padding(.vertical, 4)
+                                //.padding(.horizontal, 16)
+                                //  .padding(.vertical, 4)
                             }
                             
-                    .padding(.horizontal, 8)
+                            .padding(.horizontal, 8)
                         }
                         
                         // ── Daily Affirmation ──
@@ -165,7 +170,7 @@ struct HomeroomView: View {
                             .padding(.vertical, 50)                            .background(
                                 RoundedRectangle(cornerRadius: 20)
                                     .fill(Color(.systemYellow).opacity(0.85))
-                                   // .padding(.horizontal, 8)
+                                // .padding(.horizontal, 8)
                             )
                             .shadow(color: Color.yellow.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
@@ -193,50 +198,51 @@ struct HomeroomView: View {
                             .padding(.vertical,10)
                             .padding(.horizontal,10)
                             
-                          //  .padding()
-            ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 14) {
-        ForEach(["one", "two", "three"], id: \.self) { name in
-        let uiImage = UIImage(named: name)
-    if uiImage != nil {
-        // Real image if it exists
-    Image(name)
-       .resizable()
-      .scaledToFill()
-                            .frame(width: 200, height: 150)
-                             .clipped()
-                               .cornerRadius(16)
-                                  .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
-                              } else {
-                       // Filler placeholder box
-                  RoundedRectangle(cornerRadius: 16)
-                     .fill(Color(.systemGray5))
-                        .frame(width: 200, height: 150)
-                         .overlay(
-                        VStack(spacing: 8) {
-                                Image(systemName: "photo")
-                            .font(.system(size: 28))
-                             .foregroundStyle(Color(.systemGray3))
-                                   Text("Coming Soon")
-                                .font(.system(size: 12))
-                    .foregroundStyle(Color(.systemGray3))
-                       }
-                                                )
-                         .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            //  .padding()
+                           
+                            
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 14) {
+                                    ForEach(yearbookPhotos) { record in
+                                        if let image = loadImage(from: record.imageURL) {
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 200, height: 150)
+                                                .clipped()
+                                                .cornerRadius(16)
+                                                .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
                                         }
                                     }
+                                    
+                                    if yearbookPhotos.isEmpty {
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color(.systemGray5))
+                                            .frame(width: 200, height: 150)
+                                            .overlay(
+                                                VStack(spacing: 8) {
+                                                    Image(systemName: "photo")
+                                                        .font(.system(size: 28))
+                                                        .foregroundStyle(Color(.systemGray3))
+                                                    Text("No photos yet")
+                                                        .font(.system(size: 12))
+                                                        .foregroundStyle(Color(.systemGray3))
+                                                }
+                                            )
+                                    }
                                 }
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 5)
                             }
+                            .navigationBarBackButtonHidden(true)
                         }
-                        
-                        .padding(.horizontal,5)
-                        .padding(.vertical,5)
                     }
                 }
             }
         }
-        .navigationBarBackButtonHidden(true)
     }
+    
 }
 
 #Preview {

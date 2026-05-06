@@ -7,13 +7,14 @@
 
 import SwiftUI
 import PhotosUI
+import SwiftData
 
 struct ConfettiPiece: View {
     let index: Int
     @State private var animate = false
-
-    let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
-
+   let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+    
+    
     var body: some View {
         Circle()
             .fill(colors[index % colors.count])
@@ -36,26 +37,70 @@ struct ConfettiPiece: View {
 
 struct DetailView: View {
     @Binding var item: BucketItem
+    @Environment(\.modelContext) private var modelContext
+
+    
     @State private var uploadedImage: Image? = nil
     @State private var photoItem: PhotosPickerItem? = nil
     @State private var showCelebration = false
- 
-    // "Complete task" is only active once a photo is uploaded
+    @State private var caption: String = ""
+    
+    
+    @AppStorage("savedImagePaths") var savedPathsData: Data = Data()
+    
     var canComplete: Bool { uploadedImage != nil }
- 
+
+    func saveImageToDisk(_ image: UIImage) {
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return }
+        let filename = "yearbook_\(UUID().uuidString).jpg"  // ← match yearbook prefix
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(filename)
+        try? data.write(to: url)
+        item.imagePath = url.path
+    }
+    
+    func saveToYearbook() {
+        // Use the currently uploaded image; if missing, bail
+        guard let uploadedImage else { return }
+        // Render SwiftUI Image back to UIImage by snapshotting the underlying image if possible
+        // We stored the original UIImage when picking; prefer that path if available
+        if let path = item.imagePath,
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+           let uiImage = UIImage(data: data),
+           let jpeg = uiImage.jpegData(compressionQuality: 0.8) {
+            let filename = "yearbook_\(UUID().uuidString).jpg"
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(filename)
+            try? jpeg.write(to: url)
+            let photo = YearbookPhoto(fileName: filename, caption: caption)
+            modelContext.insert(photo)
+        }
+    }
+    
+    func loadSavedImage() {
+        // Load image from disk if an imagePath exists
+        if let path = item.imagePath,
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+           let image = UIImage(data: data) {
+            uploadedImage = Image(uiImage: image)
+        }
+        // Restore caption if present
+        caption = item.caption ?? ""
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
- 
+                
                 ZStack(){
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color(.systemBackground))
                         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
                         .overlay (
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black.opacity(0.30), lineWidth: 1)
-                )
- 
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black.opacity(0.30), lineWidth: 1)
+                        )
+                    
                     VStack {
                         Text(item.task)
                             .font(.system(size: 22, weight: .bold))
@@ -67,7 +112,7 @@ struct DetailView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
- 
+                
                 // Description
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Description")
@@ -81,11 +126,11 @@ struct DetailView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray6))
-                    )
+                )
                 
                 .shadow(color: .black.opacity(0.30), radius: 6, x: 0, y: 3)
                 .padding(.horizontal,20)
- 
+                
                 // Uploaded photo preview (appears after picking)
                 if let uploadedImage {
                     uploadedImage
@@ -93,45 +138,72 @@ struct DetailView: View {
                         .scaledToFit()
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal, 20)
-                }
- 
-                HStack(spacing: 12) {
-                    // Add to Yearbook 
-                    PhotosPicker(selection: $photoItem, matching: .images) {
-                        Label("Add to Yearbook", systemImage: "camera.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.redd)
-                            .clipShape(RoundedRectangle(cornerRadius: 30))
+                    
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+           TextField("Add a caption...", text: $caption, axis: .vertical)
+          .lineLimit(3...5)
+             .font(.system(size: 14))
+    .padding(12)
+              .background(Color(.systemGray6))
+                  .clipShape(RoundedRectangle(cornerRadius: 12))
+                 .onChange(of: caption) { _ in
+                       // Limit to 60 words
+                 let words = caption.split(separator: " ")
+              if words.count > 60 {
+                      caption = words.prefix(60).joined(separator: " ")
+                                }
+                     
+                     item.caption = caption
+                            }
+                        
+                        Text("\(caption.split(separator: " ").count)/60 words")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
- 
-                    //only is completed when a photo is added
-                    Button {
-                        item.isCompleted = true
-                        showCelebration = true
-                    } label: {
-                        Label("Completed task", systemImage: "checkmark.circle.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(canComplete ? Color.redd : Color.gray)
-                            .clipShape(RoundedRectangle(cornerRadius: 30))
-                    }
-                    .disabled(!canComplete)
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
             }
+            
+            HStack(spacing: 12) {
+                // Add to Yearbook
+                PhotosPicker(selection: $photoItem, matching: .images) {
+                    Label("Add to Yearbook", systemImage: "camera.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.redd)
+                        .clipShape(RoundedRectangle(cornerRadius: 30))
+                }
+                
+                //only is completed when a photo is added
+                Button {
+                    saveToYearbook()
+                    item.isCompleted = true
+                    item.caption = caption
+                    showCelebration = true
+                } label: {
+                    Label("Completed task", systemImage: "checkmark.circle.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(canComplete ? Color.redd : Color.gray)
+                        .clipShape(RoundedRectangle(cornerRadius: 30))
+                }
+                .disabled(!canComplete)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
         }
         .background(
-        Image("crumple")
-            .resizable()
-            .scaledToFill()
-            .ignoresSafeArea()
-             )
+            Image("crumple")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        )
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Details")
@@ -139,32 +211,33 @@ struct DetailView: View {
                     .foregroundStyle(Color.redd)
             }
         }
-        
         // Load the picked photo into uploadedImage
+        .onAppear{ loadSavedImage() }
         .onChange(of: photoItem) { newItem in
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                if let newItem, let data = try? await newItem.loadTransferable(type: Data.self),
                    let uiImage = UIImage(data: data) {
                     uploadedImage = Image(uiImage: uiImage)
+                    saveImageToDisk(uiImage)
                 }
             }
         }
-        //add a part for if the photo is not available for the user. 
+        //add a part for if the photo is not available for the user.
         .overlay {
             if showCelebration {
                 ZStack {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .onTapGesture { showCelebration = false }
-
+                    
                     VStack(spacing: 16) {
                         Text("🎉")
                             .font(.system(size: 60))
-
+                        
                         Text("Good Job!")
                             .font(.custom("soopafresh", size: 36))
                             .foregroundStyle(Color.redd)
-
+                        
                         Text("You completed this task!")
                             .font(.system(size: 16))
                             .foregroundStyle(Color.gray)
@@ -174,7 +247,7 @@ struct DetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .shadow(radius: 20)
                     .padding(.horizontal, 40)
-
+                    
                     // Confetti pieces
                     ForEach(0..<20, id: \.self) { i in
                         ConfettiPiece(index: i)
@@ -199,3 +272,4 @@ struct DetailView: View {
         DetailView(item: $previewItem)
     }
 }
+

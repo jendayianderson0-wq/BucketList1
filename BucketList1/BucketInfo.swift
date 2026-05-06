@@ -15,6 +15,8 @@ struct BucketItem: Identifiable {
     let description: String
     let linkedInterest: String
     var isCompleted: Bool = false
+    var caption: String? = nil
+    var imagePath: String? = nil
 }
  
  
