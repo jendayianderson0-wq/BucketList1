@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct NotebookView: View {
+    @EnvironmentObject var imageCollection:images
     var body: some View {
         NavigationStack {
             ZStack {

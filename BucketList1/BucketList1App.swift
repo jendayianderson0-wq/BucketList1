@@ -7,6 +7,14 @@
 
 import SwiftUI
 import TipKit
+import Combine
+
+
+class images: ObservableObject {
+        
+    
+   @Published var collection:[UIImage] = []
+}
 
 @main
 struct BucketList1App: App {
@@ -15,15 +23,18 @@ struct BucketList1App: App {
         try? Tips.configure()
     }
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
+    
+    @StateObject var imageCollection = images()
 
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
                 NotebookView()
+                    .environmentObject(imageCollection)
                         } else {
                             InterestPageView(onComplete: {
                                 hasCompletedOnboarding = true
-                            })
+                            }).environmentObject(imageCollection)
                         }
                     }
                //     .modelContainer(for: BucketItem.self)

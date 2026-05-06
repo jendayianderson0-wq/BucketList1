@@ -7,16 +7,14 @@
 
 import SwiftUI
 import PhotosUI
+import SwiftData
 
 struct ConfettiPiece: View {
-    
     let index: Int
     @State private var animate = false
-    
-    
-    
+
     let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
-    
+
     var body: some View {
         Circle()
             .fill(colors[index % colors.count])
@@ -38,15 +36,38 @@ struct ConfettiPiece: View {
 }
 
 struct DetailView: View {
+    @Environment(ViewModel.self) private var vm
+    @EnvironmentObject var imageCollection:images
     @Binding var item: BucketItem
     @State private var uploadedImage: Image? = nil
     @State private var photoItem: PhotosPickerItem? = nil
-    @State private var selectedItem: [PhotosPickerItem] = []
-    @State private var  image: Image?  = nil
     @State private var showCelebration = false
-    
-    // "Complete task" is only active once a photo is uploaded
+    @State private var caption: String = ""
     var canComplete: Bool { uploadedImage != nil }
+    
+    
+    func saveImageToDisk(_ image: UIImage) {
+            guard let data = image.jpegData(compressionQuality: 0.8) else { return }
+            let filename = "detail_\(item.id.uuidString).jpg"
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(filename)
+            try? data.write(to: url)
+            item.imagePath = url.path   // save path into BucketItem
+        }
+
+        // MARK: - Load saved image from disk on appear
+        func loadSavedImage() {
+            guard let path = item.imagePath else { return }
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+                if let image = UIImage(data: data) {
+                    imageCollection.collection.append(image)
+                    
+                    uploadedImage = Image(uiImage: image)
+                }
+            }
+            caption = item.caption ?? ""
+        }
+
     
     var body: some View {
         ScrollView {
@@ -98,43 +119,64 @@ struct DetailView: View {
                         .scaledToFit()
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal, 20)
+                    
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+           TextField("Add a caption...", text: $caption, axis: .vertical)
+          .lineLimit(3...5)
+             .font(.system(size: 14))
+    .padding(12)
+              .background(Color(.systemGray6))
+                  .clipShape(RoundedRectangle(cornerRadius: 12))
+                 .onChange(of: caption) { _ in
+                       // Limit to 60 words
+                 let words = caption.split(separator: " ")
+              if words.count > 60 {
+                      caption = words.prefix(60).joined(separator: " ")
+                                }
+                     
+                     item.caption = caption
+                            }
+                        
+                        Text("\(caption.split(separator: " ").count)/60 words")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+            
+            HStack(spacing: 12) {
+                // Add to Yearbook
+                PhotosPicker(selection: $photoItem, matching: .images) {
+                    Label("Add to Yearbook", systemImage: "camera.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.redd)
+                        .clipShape(RoundedRectangle(cornerRadius: 30))
                 }
                 
-                HStack(spacing: 12) {
-                    // Add to Yearbook 
-                    PhotosPicker(selection: $photoItem, matching: .images) {
-                        Label("Add to Yearbook", systemImage: "camera.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.redd)
-                            .clipShape(RoundedRectangle(cornerRadius: 30))
-                    }
-                    
-                    //only is completed when a photo is added
-                    Button {
-                        
-                        // 2. unwrap photoItem
-                        // 2.5 set item.image == unwrappedPhotoItem
-                        // 3. Handle the nil value (if a photoItem isn't selected
-                        
-                        item.isCompleted = true
-                        showCelebration = true
-                    } label: {
-                        Label("Completed task", systemImage: "checkmark.circle.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(canComplete ? Color.redd : Color.gray)
-                            .clipShape(RoundedRectangle(cornerRadius: 30))
-                    }
-                    .disabled(!canComplete)
+                //only is completed when a photo is added
+                Button {
+                    item.isCompleted = true
+                    item.caption = caption
+                    showCelebration = true
+                } label: {
+                    Label("Completed task", systemImage: "checkmark.circle.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(canComplete ? Color.redd : Color.gray)
+                        .clipShape(RoundedRectangle(cornerRadius: 30))
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
+                .disabled(!canComplete)
             }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
         }
         .background(
             Image("crumple")
@@ -149,36 +191,22 @@ struct DetailView: View {
                     .foregroundStyle(Color.redd)
             }
         }
-        .task(id: photoItem) {
-            
-            guard let photoItem else {          // 1. unwrap — exits if nil
-                
-                item.image = nil                 // 3. nil: nothing selected
-                
-                return
-                
-            }
-            if let data = try? await photoItem
-                .loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data) {
-                item.image = Image(uiImage: uiImage) // 2. set item.image
-                
-            } else {
-                item.image = nil                 // 3. nil: load failed
-                
-            }
+        
+        .onAppear{
+            loadSavedImage()
         }
         
         // Load the picked photo into uploadedImage
         .onChange(of: photoItem) { newItem in
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                if let newItem, let data = try? await newItem.loadTransferable(type: Data.self),
                    let uiImage = UIImage(data: data) {
                     uploadedImage = Image(uiImage: uiImage)
+                    saveImageToDisk(uiImage)
                 }
             }
         }
-        //add a part for if the photo is not available for the user. 
+        //add a part for if the photo is not available for the user.
         .overlay {
             if showCelebration {
                 ZStack {
@@ -223,8 +251,9 @@ struct DetailView: View {
         linkedInterest: "",
         isCompleted: false
     )
-    
+
     return NavigationView {
         DetailView(item: $previewItem)
     }
 }
+

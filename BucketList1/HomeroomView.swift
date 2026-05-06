@@ -24,6 +24,7 @@ let dailyAffirmations: [String] = [
 ]
 
 struct HomeroomView: View {
+    @EnvironmentObject var imageCollection:images
     @AppStorage("weeklyTaskIDs") private var weeklyTaskIDsRaw: String = ""
     @AppStorage("weeklyTaskDate") private var weeklyTaskDateRaw: Double = 0
     
@@ -168,6 +169,13 @@ struct HomeroomView: View {
                         
                         // ── Yearbook Catalog ──
                         VStack(spacing: 12) {
+                            
+//                            ForEach(Array(imageCollection.collection()) id: \.offset) { index, item in
+//                                VStack{
+//                                    images
+//                                }
+                         //   }
+                            
                             HStack {
                                 Text("Yearbook Catalog")
                                     .foregroundStyle(.red)
@@ -235,4 +243,5 @@ struct HomeroomView: View {
 
 #Preview {
     HomeroomView()
+        .environmentObject(images())
 }
